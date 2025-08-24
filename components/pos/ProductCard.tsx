@@ -19,7 +19,7 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
       />
       <div className="flex flex-col flex-1">
         <div className="text-xs text-muted-foreground">{product.sku}</div>
-        <div className="font-medium line-clamp-2">{product.sinhalaName}</div>
+        <div className="font-medium line-clamp-3">{product.sinhalaName || product.name}</div>
         <div className="mt-1 text-sm">{formatMoney(product.price)}</div>
       </div>
     </button>

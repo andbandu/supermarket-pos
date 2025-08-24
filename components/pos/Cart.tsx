@@ -31,7 +31,7 @@ export function Cart({
   children
 }: CartProps) {
   return (
-    <Card className="lg:col-span-3 p-4 flex flex-col">
+    <Card className="lg:col-span-3 p-4 flex flex-col ">
       <div className="flex items-center justify-between mb-2">
         <h2 className="text-lg font-normal">වර්තමාන බිල</h2>
         <div className="text-sm text-muted-foreground">
@@ -39,7 +39,7 @@ export function Cart({
         </div>
       </div>
 
-      <ScrollArea className="flex-1 pr-2">
+      <ScrollArea className="flex-1 pr-2 max-h-[50vh]">
         <div className="space-y-3">
           {cart.map((item) => (
             <CartItemRow

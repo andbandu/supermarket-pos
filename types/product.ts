@@ -1,3 +1,11 @@
+export interface Category {
+  id: string;
+  name: string;
+  sinhalaName: string;
+  image?: string;
+}
+
+
 export type Product = {
   id: string;
   sku: string;       // barcode / SKU
@@ -5,6 +13,7 @@ export type Product = {
   sinhalaName?: string;
   price: number;     // in your store currency
   image: string;     // product image URL
+  categoryId: string;
 };
 
 export type CartItem = {
