@@ -1,33 +1,38 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
+import { Sidebar } from "@/components/pos/Sidebar";
+import { TopNav } from "@/components/pos/TopNav";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Supermarket POS",
   description: "MVP cashier interface",
 };
 
+
+
+
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-background text-foreground`}>
-        {children}
-        <Toaster richColors position="top-right" />
+    <html lang="en">
+      <body className={inter.className}>
+        <div className="flex">
+          <Sidebar />
+          <div className="flex-1 ml-20">
+            <TopNav pageTitle="Dashboard" />
+            <main className="pt-22 min-h-screen">
+              {children}
+              <Toaster richColors position="top-right" />
+            </main>
+          </div>
+        </div>
       </body>
     </html>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { 
   Breadcrumb,
   BreadcrumbItem,
@@ -19,9 +20,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
+import React from "react";
 
 interface TopNavProps {
-  pageTitle: string;
+  pageTitle?: string;
   user?: {
     name: string;
     email: string;
@@ -31,19 +33,47 @@ interface TopNavProps {
 }
 
 export function TopNav({ pageTitle, user }: TopNavProps) {
-  const [currentTime, setCurrentTime] = useState<Date | null>(null);
   const [isMounted, setIsMounted] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     setIsMounted(true);
-    setCurrentTime(new Date());
-
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-
-    return () => clearInterval(timer);
   }, []);
+
+  // Get page title based on route
+  const getPageTitle = () => {
+    if (pageTitle) return pageTitle;
+    
+    switch (pathname) {
+      case "/":
+        return "Dashboard";
+      case "/pos":
+        return "Cashier";
+      case "/inventory":
+        return "Inventory";
+      case "/customers":
+        return "Customers";
+      case "/reports":
+        return "Reports";
+      default:
+        return "Dashboard";
+    }
+  };
+
+  // Get breadcrumb items based on route
+  const getBreadcrumbItems = () => {
+    const items = [
+      { href: "/", label: "Home" }
+    ];
+
+    if (pathname === "/pos") {
+      items.push({ href: "/pos", label: "POS" });
+    } else if (pathname !== "/") {
+      items.push({ href: pathname, label: getPageTitle() });
+    }
+
+    return items;
+  };
 
   // Mock user data
   const currentUser = user || {
@@ -53,28 +83,6 @@ export function TopNav({ pageTitle, user }: TopNavProps) {
     image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face"
   };
 
-  // Format time function that handles server/client mismatch
-  const formatTime = (date: Date | null) => {
-    if (!date) return "--:--:--";
-    return date.toLocaleTimeString([], { 
-      hour: '2-digit', 
-      minute: '2-digit',
-      second: '2-digit'
-    });
-  };
-
-  // Format date function that handles server/client mismatch
-  const formatDate = (date: Date | null) => {
-    if (!date) return "Loading...";
-    return date.toLocaleDateString(undefined, { 
-      weekday: 'short', 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
-    });
-  };
-
-  // Only render time/date after component is mounted to avoid hydration mismatch
   if (!isMounted) {
     return (
       <div className="h-16 bg-background border-b flex items-center justify-between px-6 fixed top-0 left-20 right-0 z-40">
@@ -87,13 +95,13 @@ export function TopNav({ pageTitle, user }: TopNavProps) {
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbLink href="/pos">POS</BreadcrumbLink>
+                <Skeleton className="h-4 w-16" />
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
           
           <div className="flex items-center gap-2">
-            <h1 className="text-xl font-semibold">{pageTitle}</h1>
+            <Skeleton className="h-6 w-32" />
             <Badge variant="secondary">MVP</Badge>
           </div>
         </div>
@@ -113,39 +121,37 @@ export function TopNav({ pageTitle, user }: TopNavProps) {
     );
   }
 
+  const breadcrumbItems = getBreadcrumbItems();
+
   return (
     <div className="h-16 bg-background border-b flex items-center justify-between px-6 fixed top-0 left-20 right-0 z-40">
       {/* Left side: Breadcrumb and Page Title */}
       <div className="flex items-center gap-4">
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/">Home</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/pos">POS</BreadcrumbLink>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-        
-        <div className="flex items-center gap-2">
-          <h1 className="text-xl font-semibold">{pageTitle}</h1>
-          <Badge variant="secondary">MVP</Badge>
-        </div>
+      <Breadcrumb>
+        <BreadcrumbList>
+          {breadcrumbItems.map((item, index) => (
+            <React.Fragment key={item.href}>
+              {index > 0 && (
+                <BreadcrumbSeparator />
+              )}
+              <BreadcrumbItem>
+                <BreadcrumbLink href={item.href}>{item.label}</BreadcrumbLink>
+              </BreadcrumbItem>
+            </React.Fragment>
+          ))}
+        </BreadcrumbList>
+      </Breadcrumb>
+      
+      <div className="flex items-center gap-2">
+        <h1 className="text-xl font-semibold">{getPageTitle()}</h1>
+        <Badge variant="secondary">MVP</Badge>
       </div>
+    </div>
 
       {/* Right side: Time and User Profile */}
       <div className="flex items-center gap-6">
         {/* Date and Time */}
-        <div className="text-sm text-muted-foreground text-right">
-          <div className="font-medium">
-            {formatTime(currentTime)}
-          </div>
-          <div>
-            {formatDate(currentTime)}
-          </div>
-        </div>
+        <TimeDisplay />
 
         {/* User Profile */}
         <DropdownMenu>
@@ -177,6 +183,39 @@ export function TopNav({ pageTitle, user }: TopNavProps) {
             <DropdownMenuItem className="text-destructive">Logout</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+      </div>
+    </div>
+  );
+}
+
+// Separate component for time display to avoid hydration issues
+function TimeDisplay() {
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="text-sm text-muted-foreground text-right">
+      <div className="font-medium">
+        {currentTime.toLocaleTimeString([], { 
+          hour: '2-digit', 
+          minute: '2-digit',
+          second: '2-digit'
+        })}
+      </div>
+      <div>
+        {currentTime.toLocaleDateString(undefined, { 
+          weekday: 'short', 
+          year: 'numeric', 
+          month: 'short', 
+          day: 'numeric' 
+        })}
       </div>
     </div>
   );
