@@ -120,3 +120,37 @@
     @apply bg-background text-foreground;
   }
 }
+
+
+
+/* Print Styles */
+@media print {
+  @page {
+    margin: 0;
+    size: 80mm auto;
+  }
+  
+  body * {
+    visibility: hidden;
+  }
+  
+  .bill-container, .bill-container * {
+    visibility: visible;
+  }
+  
+  .bill-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 80mm;
+    margin: 0;
+    padding: 10px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    background: white;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+}

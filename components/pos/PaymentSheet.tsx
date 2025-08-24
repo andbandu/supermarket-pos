@@ -3,6 +3,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { QuickCash } from "./QuickCash";
+import { BillPrint } from "./BillPrint";
 import { formatMoney } from "@/lib/money";
 
 interface PaymentSheetProps {
@@ -16,6 +17,9 @@ interface PaymentSheetProps {
   change: number;
   onCompleteSale: () => void;
   cartEmpty: boolean;
+  cart: any[]; // Add cart prop
+  subtotal: number; // Add subtotal prop
+  tax: number; // Add tax prop
 }
 
 export function PaymentSheet({
@@ -28,8 +32,13 @@ export function PaymentSheet({
   total,
   change,
   onCompleteSale,
-  cartEmpty
+  cartEmpty,
+  cart,
+  subtotal,
+  tax
 }: PaymentSheetProps) {
+  const tenderNum = +(tender || "0");
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetTrigger asChild>
@@ -75,10 +84,29 @@ export function PaymentSheet({
           </TabsContent>
         </Tabs>
 
-        <SheetFooter className="mt-6">
-          <Button className="w-full" onClick={onCompleteSale}>
-            Complete Sale
-          </Button>
+        <SheetFooter className="mt-6 flex flex-col gap-3">
+          <div className="flex gap-2">
+            <Button 
+              className="flex-1" 
+              onClick={onCompleteSale}
+              disabled={method === "cash" && tenderNum < total}
+            >
+              Complete Sale
+            </Button>
+            
+            {/* Print Bill Button - Only show after successful payment conditions */}
+            {!cartEmpty && tenderNum >= total && (
+              <BillPrint
+                cart={cart}
+                subtotal={subtotal}
+                tax={tax}
+                total={total}
+                tender={tenderNum}
+                change={change}
+                paymentMethod={method}
+              />
+            )}
+          </div>
         </SheetFooter>
       </SheetContent>
     </Sheet>

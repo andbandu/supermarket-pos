@@ -622,7 +622,7 @@ export default function CashierPage() {
     <div className="pt-0 md:pt-0 max-w-[100%] mx-auto">
       
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 px-5 max-w-[1400px] mx-auto">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 px-5  mx-auto">
         <ProductGrid
           query={query}
           setQuery={setQuery}
@@ -643,18 +643,22 @@ export default function CashierPage() {
           onRemove={removeItem}
           onClear={clearCart}
         >
-          <PaymentSheet
-            open={payOpen}
-            onOpenChange={setPayOpen}
-            method={method}
-            setMethod={setMethod}
-            tender={tender}
-            setTender={setTender}
-            total={total}
-            change={change}
-            onCompleteSale={handleCompleteSale}
-            cartEmpty={!cart.length}
-          />
+          
+        <PaymentSheet
+          open={payOpen}
+          onOpenChange={setPayOpen}
+          method={method}
+          setMethod={setMethod}
+          tender={tender}
+          setTender={setTender}
+          total={total}
+          change={change}
+          onCompleteSale={handleCompleteSale}
+          cartEmpty={!cart.length}
+          cart={cart} // Add this
+          subtotal={subtotal} // Add this
+          tax={tax} // Add this
+        />
         </Cart>
       </div>
     </div>
