@@ -1,14 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-
 import { Product, CartItem, Category } from "@/types/product";
 import { formatMoney } from "@/lib/money";
 import { Cart } from "@/components/pos/Cart";
 import { ProductGrid } from "@/components/pos/ProductGrid";
 import { PaymentSheet } from "@/components/pos/PaymentSheet";
+import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 
 const TAX_RATE = 0.08;
 
@@ -535,6 +534,9 @@ export default function CashierPage() {
   const [tender, setTender] = React.useState<string>("");
   const [method, setMethod] = React.useState<"cash" | "card">("cash");
 
+
+  
+
    // Filter products by search query AND category
   const filtered = React.useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -618,8 +620,80 @@ export default function CashierPage() {
     setPayOpen(false);
   };
 
+
+  // Keyboard shortcuts
+  useKeyboardShortcuts({
+    'f1': () => !cart.length && setPayOpen(true), // F1 to open payment
+    'f2': () => handleQuickCompleteSale(), // F2 to complete sale
+    'f3': () => handleQuickPrint(), // F3 to print bill
+    'f8': () => clearCart(), // F8 to clear cart
+    'f9': () => setQuery(""), // F9 to clear search
+    'escape': () => {
+      setQuery("");
+      setPayOpen(false);
+    },
+    'ctrl+enter': (e) => {
+      e.preventDefault();
+      if (filtered[0]) addToCart(filtered[0]);
+    },
+    'ctrl+p': (e) => {
+      e.preventDefault();
+      handleQuickPrint();
+    },
+    'ctrl+s': (e) => {
+      e.preventDefault();
+      handleQuickCompleteSale();
+    }
+  });
+
+  const handleQuickCompleteSale = () => {
+    if (!cart.length) {
+      toast.error("Cart is empty");
+      return;
+    }
+    
+    // For quick completion, assume cash payment with exact amount
+    if (method === "cash") {
+      setTender(total.toFixed(2));
+    }
+    
+    handleCompleteSale();
+  };
+
+
+   const handleQuickPrint = () => {
+    if (!cart.length) {
+      toast.error("No bill to print");
+      return;
+    }
+    
+    // Simulate print action - you'll need to integrate with your BillPrint component
+    toast.info("Printing bill...", {
+      action: {
+        label: "Open Print Dialog",
+        onClick: () => {
+          // This would trigger your print functionality
+          console.log("Print bill triggered");
+        }
+      }
+    });
+  };
+
+  React.useEffect(() => {
+  const handleGlobalKeyDown = (event: KeyboardEvent) => {
+    // Prevent default behavior for function keys
+    if (event.key.startsWith('F') && !event.key.startsWith('F1') && parseInt(event.key.slice(1)) <= 12) {
+      event.preventDefault();
+    }
+  };
+
+  window.addEventListener('keydown', handleGlobalKeyDown);
+  return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+}, []);
+
   return (
     <div className="pt-0 md:pt-0 max-w-[100%] mx-auto">
+      
       
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 px-5  mx-auto">
@@ -643,7 +717,7 @@ export default function CashierPage() {
           onRemove={removeItem}
           onClear={clearCart}
         >
-          
+
         <PaymentSheet
           open={payOpen}
           onOpenChange={setPayOpen}

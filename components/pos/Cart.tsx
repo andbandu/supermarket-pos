@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -18,19 +19,22 @@ interface CartProps {
   onClear: () => void;
   children: React.ReactNode;
 }
-
-export function Cart({
-  cart,
-  subtotal,
-  tax,
-  total,
-  onIncrement,
-  onDecrement,
-  onRemove,
-  onClear,
-  children
-}: CartProps) {
-  return (
+export const Cart = forwardRef<HTMLDivElement, CartProps>(
+function Cart(
+    {
+      cart,
+      subtotal,
+      tax,
+      total,
+      onIncrement,
+      onDecrement,
+      onRemove,
+      onClear,
+      children
+    },
+    ref
+  ) {
+    return (
     <Card className="lg:col-span-3 p-4 flex flex-col ">
       <div className="flex items-center justify-between mb-2">
         <h2 className="text-lg font-normal">වර්තමාන බිල</h2>
@@ -75,3 +79,4 @@ export function Cart({
     </Card>
   );
 }
+);

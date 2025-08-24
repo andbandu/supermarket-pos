@@ -1,10 +1,17 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter, SheetTrigger } from "@/components/ui/sheet";
+import { forwardRef, useImperativeHandle } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { QuickCash } from "./QuickCash";
 import { BillPrint } from "./BillPrint";
 import { formatMoney } from "@/lib/money";
+
+
+export interface PaymentSheetRef {
+  triggerPrint: () => void;
+  completeSale: () => void;
+}
 
 interface PaymentSheetProps {
   open: boolean;
@@ -17,27 +24,43 @@ interface PaymentSheetProps {
   change: number;
   onCompleteSale: () => void;
   cartEmpty: boolean;
-  cart: any[]; // Add cart prop
-  subtotal: number; // Add subtotal prop
-  tax: number; // Add tax prop
+  cart: any[];
+  subtotal: number;
+  tax: number;
 }
+export const PaymentSheet = forwardRef<PaymentSheetRef, PaymentSheetProps>(
+function PaymentSheet(
+    {
+      open,
+      onOpenChange,
+      method,
+      setMethod,
+      tender,
+      setTender,
+      total,
+      change,
+      onCompleteSale,
+      cartEmpty,
+      cart,
+      subtotal,
+      tax
+    },
+    ref
+  ) {
+    const tenderNum = +(tender || "0");
 
-export function PaymentSheet({
-  open,
-  onOpenChange,
-  method,
-  setMethod,
-  tender,
-  setTender,
-  total,
-  change,
-  onCompleteSale,
-  cartEmpty,
-  cart,
-  subtotal,
-  tax
-}: PaymentSheetProps) {
-  const tenderNum = +(tender || "0");
+  // Expose functions to parent component
+    useImperativeHandle(ref, () => ({
+      triggerPrint: () => {
+        console.log("Print triggered from parent");
+        // You can implement print logic here
+      },
+      completeSale: () => {
+        if (!cartEmpty && (method !== "cash" || tenderNum >= total)) {
+          onCompleteSale();
+        }
+      }
+    }));
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -112,3 +135,4 @@ export function PaymentSheet({
     </Sheet>
   );
 }
+);
